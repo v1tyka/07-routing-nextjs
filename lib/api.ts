@@ -13,9 +13,26 @@ interface Params {
   tag?: string;
 }
 
+// ✅ Отримуємо змінні з .env
 const myKey = process.env.NEXT_PUBLIC_NOTES_TOKEN;
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+// ✅ Перевіряємо, чи вони існують
+if (!baseUrl) {
+  throw new Error("❌ Missing NEXT_PUBLIC_BASE_URL in environment variables");
+}
+
+if (!myKey) {
+  throw new Error(
+    "❌ Missing NEXT_PUBLIC_NOTES_TOKEN in environment variables"
+  );
+}
+
 const notesUrl = `${baseUrl}/notes`;
+
+// =============================
+//      API функції
+// =============================
 
 export async function fetchNotes(
   searchValue: string = "",
@@ -33,17 +50,18 @@ export async function fetchNotes(
     params.search = searchValue;
   }
 
-  const response = await axios.get<FetchNotesResponse>(`${notesUrl}`, {
+  const response = await axios.get<FetchNotesResponse>(notesUrl, {
     params,
     headers: {
       Authorization: `Bearer ${myKey}`,
     },
   });
+
   return response.data;
 }
 
 export const addNote = async (noteData: NewNoteData): Promise<Note> => {
-  const response = await axios.post<Note>(`${notesUrl}`, noteData, {
+  const response = await axios.post<Note>(notesUrl, noteData, {
     headers: {
       Authorization: `Bearer ${myKey}`,
     },
